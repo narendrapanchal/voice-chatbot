@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import Avatar from './Avatar';
-import axios from 'axios';
 import '../styles/VoiceChat.css';
 import { GoogleGenerativeAI } from "@google/generative-ai";
-
+import GridBox from './GridBox';
+import MarkdownRenderer from './MarkdownRendererProps';
 const SpeechRecognition =
   window.SpeechRecognition || window.webkitSpeechRecognition;
 
@@ -38,6 +37,16 @@ const VoiceChat = () => {
     setRecognition(recognitionInstance);
 
   }, []);
+  useEffect(() => {
+    const speak = (text) => {
+      const utterance = new SpeechSynthesisUtterance(text);
+      window.speechSynthesis.speak(utterance);
+    };
+
+    if (response) {
+      speak(response);
+    }
+  }, [response]);
 
   const handleVoiceInput = () => {
     if (!isSpeaking) {
@@ -47,68 +56,27 @@ const VoiceChat = () => {
     }
   };
 
-  const fetchResponse = async (text) => {
+  const fetchResponse = async (promptText) => {
     const genAI = new GoogleGenerativeAI(process.env.REACT_APP_GOOGLE_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    
-    const prompt = text;
-    
-    const result = await model.generateContent(prompt);
-    console.log("result",result.response.text())
-    
-    const videoId=await createTalk(result.response.text());
-    videoLink(videoId);
+    const result = await model.generateContent(promptText);
+    setResponse(result.response.text());
   };
 
-  const createTalk = async (talk) => {
-    const url = process.env.REACT_APP_API_URL; 
-    const requestBody = {
-      script: {
-        type: 'text',
-        input: talk,
-      },
-      source_url: 'https://t3.ftcdn.net/jpg/06/71/26/32/360_F_671263227_lV2c9WN7yNA9q6IIm99ndaGh3QN30ebt.jpg',
-    };
-
-    try {
-      const response = await axios.post(url, requestBody, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Basic bmFyZW5kcmFwYW5jaGFsMDIwQGdtYWlsLmNvbQ:8qYGORahUYo-cPVdH0CfI',
-        },
-      });
-
-      return response.data.id;
-    } catch (error) {
-      console.error('Error:', error);
-    }
-  };
-  const videoLink=async(id)=>{
-    const url = process.env.REACT_APP_API_URL+id; 
-    const authHeader = `Basic ${process.env.REACT_APP_LLM_API_KEY}`;
-    let response 
-    try {
-      response = await axios.get(url, {
-        headers: {
-          'Authorization': authHeader,
-        },
-      });
-    }catch(err){
-      console.log(err.message);
-    }
-    setResponse(response.data.result_url)
-  }
 
   
   return (
     <div className="container">
-      <h1>Voice Chatbot with Avatar</h1>
-      <button onClick={handleVoiceInput}>
-        {isSpeaking ? 'Stop Listening' : 'Speak'}
+      <div className='centerBox'>
+      <h1>Voice Chatbot</h1>
+      <GridBox fetchResponse={fetchResponse} setTranscript={setTranscript}/>
+      <button onClick={handleVoiceInput} >
+        {isSpeaking ? 'Stop Listening' : 'Tell the topic'}
       </button>
-      <p>User: {transcript}</p>
-      
-      <Avatar response={response} />
+      </div>
+      <h2><strong>User:</strong> <p>{transcript}</p></h2>
+      <div><h2>Bot:</h2> <MarkdownRenderer markdown={response}/>
+    </div>
     </div>
   );
 };

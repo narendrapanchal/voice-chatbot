@@ -1,0 +1,41 @@
+/* Container for the grid */
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    padding: 20px;
+  }
+  
+  /* Individual grid items */
+  .grid-item {
+    background-color: #f0f0f0;
+    border-radius: 10px;
+    padding: 40px;
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* Icon styling */
+  .icon {
+    font-size: 3rem;
+    margin-bottom: 10px;
+    color: #333;
+  }
+  
+  /* Hover effect for grid items */
+  .grid-item:hover {
+    background-color: #87ceeb; /* Light sky blue */
+    color: white;
+  }
+  
+  .grid-item:hover .icon {
+    color: white;
+  }
+  
